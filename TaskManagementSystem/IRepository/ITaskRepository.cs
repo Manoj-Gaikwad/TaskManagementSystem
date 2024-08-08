@@ -7,6 +7,7 @@ namespace TaskManagementSystem.IRepository
     public interface ITaskRepository
     {
       Task<List<TaskModel>> GetAllTasks();
-      Task<string> CreateTask(TaskModel t1);
+      Task<Response> CreateTask(TaskModel t1);
+      Task<object> GetManagerAndEmployeesEmailsAsync();
     }
 }

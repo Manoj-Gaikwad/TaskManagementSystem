@@ -24,6 +24,11 @@ namespace TaskManagementSystem.Controllers
         {
             return await _iemployeeRepository.GetAll();
         }
+        [HttpGet("GetManagerWiseEmployee")]
+        public async Task<List<ApplicationUser>> GetManagerWiseEmployee()
+        {
+            return await _iemployeeRepository.GetManagerWiseEmployee();
+        }
 
         [HttpGet("GetAllTasks")]
         [Authorize(Roles = "Admin, Manager, Employee")]

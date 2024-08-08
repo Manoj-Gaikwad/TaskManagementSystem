@@ -25,11 +25,16 @@ namespace TaskManagementSystem.Controllers
             return await _itaskRepository.GetAllTasks();
         }
 
-        [HttpPost("Create Task")]
+        [HttpPost("CreateTask")]
         [Authorize(Roles = "Manager , Admin")]
-       public async Task<string> CreateTask(TaskModel t1)
+       public async Task<Response> CreateTask(TaskModel t1)
        {
             return await _itaskRepository.CreateTask(t1);
        }
+        [HttpGet("GetAllManagedEmployees")]
+        public async Task<object> GetManagerAndEmployeesEmailsAsync()
+        {
+            return await _itaskRepository.GetManagerAndEmployeesEmailsAsync();
+        }
     }
 }
