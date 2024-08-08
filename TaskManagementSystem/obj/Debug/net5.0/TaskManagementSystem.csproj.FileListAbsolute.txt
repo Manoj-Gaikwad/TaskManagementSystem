@@ -68,3 +68,4 @@ D:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\bin\Debug\net5
 D:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\bin\Debug\net5.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 D:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\bin\Debug\net5.0\Microsoft.Extensions.Identity.Core.dll
 D:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\bin\Debug\net5.0\Microsoft.Extensions.Identity.Stores.dll
+D:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\obj\Debug\net5.0\TaskManagementSystem.sourcelink.json

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TaskManagementSystem.Models;
 using TaskManagementSystem.IRepository;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace TaskManagementSystem.Repository
@@ -28,11 +30,11 @@ namespace TaskManagementSystem.Repository
             var data= await _taskdbconnection.Tasks.Where(x => x.CreatedBy == _sessionData.UserEmail).ToListAsync();
             return data;
         }
-        public async Task<string> CreateTask(TaskModel t1)
+        public async Task<Response> CreateTask(TaskModel t1)
         {
             TaskModel task = new TaskModel()
             {
-                TaskId=t1.TaskId,
+                //TaskId=t1.TaskId,
                 Title = t1.Title,
                 Description = t1.Description,
                 AssignedTo = t1.AssignedTo,
@@ -44,9 +46,55 @@ namespace TaskManagementSystem.Repository
                 ManagerId = t1.ManagerId,
 
             };
+            if (task.Uplodedfile == null)
+            {
+                task.Uplodedfile = "No";
+            }
             await _taskdbconnection.AddAsync(task);
             await _taskdbconnection.SaveChangesAsync();
-            return "Task Added Successfully";
+
+            Response r1= new Response();
+            r1.Output = "Task Added Successfully";
+            r1.StatusMessage = "success";
+            return r1;
         }
+
+        public async Task<object> GetManagerAndEmployeesEmailsAsync()
+        {
+            // Get the manager's email from the session data
+            var managerEmail = this._sessionData.UserEmail;
+
+            // Retrieve the manager's user
+            var manager = await this._taskdbconnection.Users
+                .FirstOrDefaultAsync(x => x.Email == managerEmail);
+
+            if (manager == null)
+            {
+                // Handle the case where the manager is not found
+                return new { manager = (object)null, employees = new List<string>() };
+            }
+
+            // Retrieve all employees managed by the identified manager
+            var employees = await this._taskdbconnection.Users
+              .Where(x => x.ManagerId == manager.ManagerId && x.Email != managerEmail) // Exclude manager's email
+              .Select(x => x.Email) // Select only the email of employees
+              .ToListAsync();
+
+            // Create the response object with manager details and employee emails
+            var result = new
+            {
+                manager = new
+                {
+                    name = $"{manager.FirstName} {manager.LastName}",
+                    email = manager.Email,
+                    ManagerId= manager.ManagerId,
+                },
+                employees = employees
+            };
+
+            return result;
+        }
+
+
     }
 }

@@ -29,6 +29,16 @@ namespace TaskManagementSystem.Repository
         public async Task<List<ApplicationUser>> GetAll(){
             return await this._taskdbconnection.Users.ToListAsync();
         }
+
+        public async Task<List<ApplicationUser>>GetManagerWiseEmployee()
+        {
+            
+           var manager = await this._taskdbconnection.Users.FirstOrDefaultAsync(x=>x.Email== this._sessionData.UserEmail);
+
+            var data = await this._taskdbconnection.Users.Where(x => x.ManagerId == manager.ManagerId && x.Email != manager.Email).ToListAsync();
+
+            return data;
+        }
         public async Task<List<TaskModel>> GetAllTasks()
         {
             //var result = from mt in _taskdbconnection.MasterTemplet
