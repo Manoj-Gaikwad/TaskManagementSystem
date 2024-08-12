@@ -9,8 +9,8 @@ namespace TaskManagementSystem.IRepository
     public interface IEmployeeRepository
     {
         Task<List<ApplicationUser>> GetAll();
-        Task<List<ApplicationUser>> GetManagerWiseEmployee();
+        Task<object> GetManagerWiseEmployee();
         Task<List<TaskModel>> GetAllTasks();
-        Task<string> UploadDocument(TaskComplition taskComplition);
+        Task<object> UploadDocument(IFormFile File, bool IsComplited, string Fileupload, int TaskId);
     }
 }

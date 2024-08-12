@@ -30,14 +30,19 @@ namespace TaskManagementSystem.Repository
             return await this._taskdbconnection.Users.ToListAsync();
         }
 
-        public async Task<List<ApplicationUser>>GetManagerWiseEmployee()
+        public async Task<object>GetManagerWiseEmployee()
         {
             
            var manager = await this._taskdbconnection.Users.FirstOrDefaultAsync(x=>x.Email== this._sessionData.UserEmail);
 
-            var data = await this._taskdbconnection.Users.Where(x => x.ManagerId == manager.ManagerId && x.Email != manager.Email).ToListAsync();
+            var employee = await this._taskdbconnection.Users.Where(x => x.ManagerId == manager.Id && x.Email != manager.Email).ToListAsync();
 
-            return data;
+            return new {
+                manager = manager,
+                data = employee
+            };
+            
+           
         }
         public async Task<List<TaskModel>> GetAllTasks()
         {
@@ -72,31 +77,31 @@ namespace TaskManagementSystem.Repository
             return data;
         }
       
-        public async Task<string> UploadDocument(TaskComplition taskComplition)
+        public async Task<object> UploadDocument(IFormFile File, bool IsComplited, string Fileupload, int TaskId)
         {
             _uploadPath = @"D:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\Documents";
-            if (taskComplition.File == null || taskComplition.File.Length == 0)
+            if (File == null || File.Length == 0)
                 return "No file uploaded";
 
             // Combine the upload path with the file name
-            var filePath = Path.Combine(_uploadPath, taskComplition.File.FileName);
+            var filePath = Path.Combine(_uploadPath,File.FileName);
 
             // Copy the file to the specified path
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                await taskComplition.File.CopyToAsync(stream);
+                await File.CopyToAsync(stream);
             }
 
-            TaskModel T1 = await _taskdbconnection.Tasks.SingleOrDefaultAsync(x=>x.TaskId == taskComplition.TaskId);
+            TaskModel T1 = await _taskdbconnection.Tasks.SingleOrDefaultAsync(x=>x.TaskId ==TaskId);
             if(T1!=null)
             {
-               T1.IsCompleted = taskComplition.IsComplited;
-                T1.Uplodedfile = taskComplition.Fileupload;
+               T1.IsCompleted = IsComplited;
+                T1.Uplodedfile = Fileupload;
                 T1.ComplitionDate = DateTime.Now;
                 await _taskdbconnection.SaveChangesAsync();
             }
 
-            return $"File uploaded successfully: {filePath}";
+            return $"File uploaded successfully";
 
         }
 

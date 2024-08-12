@@ -31,7 +31,7 @@ namespace TaskManagementSystem.Repository
             return data;
         }
         public async Task<Response> CreateTask(TaskModel t1)
-        {
+            {
             TaskModel task = new TaskModel()
             {
                 //TaskId=t1.TaskId,
@@ -76,7 +76,7 @@ namespace TaskManagementSystem.Repository
 
             // Retrieve all employees managed by the identified manager
             var employees = await this._taskdbconnection.Users
-              .Where(x => x.ManagerId == manager.ManagerId && x.Email != managerEmail) // Exclude manager's email
+              .Where(x => x.ManagerId == manager.Id && x.Email != managerEmail &&x.Role=="Employee") // Exclude manager's email
               .Select(x => x.Email) // Select only the email of employees
               .ToListAsync();
 
@@ -87,7 +87,7 @@ namespace TaskManagementSystem.Repository
                 {
                     name = $"{manager.FirstName} {manager.LastName}",
                     email = manager.Email,
-                    ManagerId= manager.ManagerId,
+                    ManagerId= manager.Id,
                 },
                 employees = employees
             };
