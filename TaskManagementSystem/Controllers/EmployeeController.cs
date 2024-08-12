@@ -25,7 +25,7 @@ namespace TaskManagementSystem.Controllers
             return await _iemployeeRepository.GetAll();
         }
         [HttpGet("GetManagerWiseEmployee")]
-        public async Task<List<ApplicationUser>> GetManagerWiseEmployee()
+        public async Task<object> GetManagerWiseEmployee()
         {
             return await _iemployeeRepository.GetManagerWiseEmployee();
         }
@@ -38,11 +38,10 @@ namespace TaskManagementSystem.Controllers
         }
 
         [HttpPost("UploadFile")]
-        [Consumes("multipart/form-data")]
-        public async Task<string> UploadDocument([FromForm] TaskComplition taskComplition)
+        public async Task<object> UploadDocument([FromForm] IFormFile File, [FromForm] bool IsComplited, [FromForm] string Fileupload, [FromForm] int TaskId)
         {
-            return await _iemployeeRepository.UploadDocument(taskComplition);
+            var data=await _iemployeeRepository.UploadDocument(File, IsComplited, Fileupload,TaskId);
+            return Ok(data);
         }
-
     }
 }

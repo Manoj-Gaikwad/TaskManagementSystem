@@ -14,6 +14,7 @@ using System.Linq;
 using TaskManagementSystem.Repository;
 using TaskManagementSystem.IRepository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace TaskManagementSystem.Controllers
 {
@@ -41,53 +42,68 @@ namespace TaskManagementSystem.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            if (model.ManagerId==null)
+            if (model.Role == "Employee")
             {
-                model.ManagerId = 0;
-            }
-            var user = new ApplicationUser
-            {
-                UserName = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                PhoneNumber=model.PhoneNumber,
-                DOB = model.DOB,
-                Address = model.Address,
-                Department = model.Department,
-                Role=model.Role,
-                ManagerId = model.ManagerId,
-
-            };
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (result.Succeeded)
-            {
-                // Assign role to user
-                var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
-                if (!roleResult.Succeeded)
+                var user = new ApplicationUser
                 {
-                    return BadRequest(roleResult.Errors);
-                }
+                    UserName = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    DOB = model.DOB,
+                    Address = model.Address,
+                    Department = model.Department,
+                    Role = model.Role,
+                    ManagerId = model.ManagerId,
 
-                if (model.Role.Equals("Manager", StringComparison.OrdinalIgnoreCase))
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
                 {
-                    var manager = new Manager
+                    // Assign role to user
+                    var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
+                    if (!roleResult.Succeeded)
                     {
-                        ManagerId = model.ManagerId,
-                        ManagerName = $"{model.FirstName} {model.LastName}",
-                        Email = model.Email,
-                        Department = model.Department // You might want to get this from the model or some other source
-                    };
-                    // Save the manager to the database
-                    _dbContext.Manager.Add(manager);
-                    await _dbContext.SaveChangesAsync();
+                        return BadRequest(roleResult.Errors);
+                    }
+                    return Ok(new { Result = "User created successfully" });
                 }
-                return Ok(new { Result = "User created successfully" });
-            }
 
-            return BadRequest(result.Errors);
+            }
+            else
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    DOB = model.DOB,
+                    Address = model.Address,
+                    Department = model.Department,
+                    Role = model.Role,
+                    ManagerId = null,
+
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    // Assign role to user
+                    var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
+                    if (!roleResult.Succeeded)
+                    {
+                        return BadRequest(roleResult.Errors);
+                    }
+                    return Ok(new { Result = "User created successfully" });
+                }
+            }
+                return Ok(new { Result = "Error" });
         }
 
         [HttpPost("login")]

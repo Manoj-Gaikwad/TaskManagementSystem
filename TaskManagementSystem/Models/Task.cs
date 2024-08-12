@@ -18,7 +18,7 @@ namespace TaskManagementSystem.Models
         public bool IsCompleted { get; set; }
         public string Uplodedfile { get; set; }
         public DateTime ComplitionDate { get; set; }
-        public int ManagerId {  get; set; } 
+        public string ManagerId {  get; set; } 
 
 
 

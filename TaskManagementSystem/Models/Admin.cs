@@ -2,7 +2,7 @@
 {
     public class Admin
     { /*  public int AdminId {  get; set; }*/
-        public int ManagerId { get; set; }
+        public string ManagerId { get; set; }
         public string ManagerName {  get; set; }
         public string EmpName { get; set; }
         public int Month {  get; set; }
