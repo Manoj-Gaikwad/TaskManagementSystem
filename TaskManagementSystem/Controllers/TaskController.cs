@@ -31,10 +31,22 @@ namespace TaskManagementSystem.Controllers
        {
             return await _itaskRepository.CreateTask(t1);
        }
+        [HttpPost("UpdateTask")]
+        [Authorize(Roles = "Manager , Admin")]
+        public async Task<string> UpdateTask(TaskModel t1)
+        {
+            return await _itaskRepository.UpdateTask(t1);
+        }
         [HttpGet("GetAllManagedEmployees")]
         public async Task<object> GetManagerAndEmployeesEmailsAsync()
         {
             return await _itaskRepository.GetManagerAndEmployeesEmailsAsync();
+        }
+
+        [HttpGet("GetTaskById")]
+        public async Task<TaskModel> GetTaskById(int TaskId)
+        {
+            return await _itaskRepository.GetTaskById(TaskId);
         }
     }
 }
