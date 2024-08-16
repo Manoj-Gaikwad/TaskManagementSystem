@@ -161,6 +161,36 @@ namespace TaskManagementSystem.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        [HttpGet("GetLoginUserDetails")]
+        public async Task<ApplicationUser> GetLoginUserDetails(string Email)
+        {
+            var data= await this._dbContext.Users.FirstOrDefaultAsync(x => x.Email == Email);
+            return data;
+        }
+        [HttpPost("UpdateUserInfo")]
+        public async Task<List<ApplicationUser>> UpdateUserProfile(ApplicationUser applicationUser)
+        {
+            ApplicationUser applicationUser1 = await this._dbContext.Users.FirstOrDefaultAsync(x=>x.Email==applicationUser.Email);
 
+            if (applicationUser1 != null)
+            {
+                applicationUser1.Email = applicationUser.Email;
+                applicationUser1.FirstName = applicationUser.FirstName;
+                applicationUser1.LastName = applicationUser.LastName;
+                applicationUser1.DOB = applicationUser.DOB;
+                applicationUser1.Department = applicationUser.Department;
+                applicationUser1.PhoneNumber = applicationUser.PhoneNumber;
+                applicationUser1.Address = applicationUser.Address;
+                await this._dbContext.SaveChangesAsync();
+                var updatedUsers = await this._dbContext.Users.Where(x => x.Email == applicationUser.Email).ToListAsync();
+                return updatedUsers;
+            }
+            else
+            {
+                return null;
+            }
+                
+        }
     }
-}
+
+ }

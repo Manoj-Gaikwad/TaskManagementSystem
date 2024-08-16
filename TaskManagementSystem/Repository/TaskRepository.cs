@@ -30,6 +30,11 @@ namespace TaskManagementSystem.Repository
             var data= await _taskdbconnection.Tasks.Where(x => x.CreatedBy == _sessionData.UserEmail).ToListAsync();
             return data;
         }
+        public async Task<TaskModel>GetTaskById(int Id)
+        {
+            var data=await _taskdbconnection.Tasks.FirstOrDefaultAsync(x=>x.TaskId == Id);
+            return data;
+        }
         public async Task<Response> CreateTask(TaskModel t1)
             {
             TaskModel task = new TaskModel()
@@ -57,6 +62,29 @@ namespace TaskManagementSystem.Repository
             r1.Output = "Task Added Successfully";
             r1.StatusMessage = "success";
             return r1;
+        }
+
+        public async Task<string> UpdateTask(TaskModel t1)
+        {
+            var data = await this._taskdbconnection.Tasks.FirstOrDefaultAsync(x => x.TaskId == t1.TaskId);
+
+            if (data != null)
+            {
+                data.Title = t1.Title;
+                data.Description = t1.Description;
+                data.AssignedTo = t1.AssignedTo;
+
+                this._taskdbconnection.SaveChangesAsync();
+                return "Task Updated Successfully";
+            }
+            else
+            {
+                return "Error In Task Update";
+            }
+            
+
+          
+
         }
 
         public async Task<object> GetManagerAndEmployeesEmailsAsync()
