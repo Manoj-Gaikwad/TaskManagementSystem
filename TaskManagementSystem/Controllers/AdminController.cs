@@ -21,7 +21,7 @@ namespace TaskManagementSystem.Controllers
 
 
         [HttpGet("MonthWisePerformance")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<List<Admin>> MonthWisePerformance()
         {
             return await _adminRepository.MonthWisePerformance();

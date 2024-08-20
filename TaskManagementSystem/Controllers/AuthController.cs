@@ -136,15 +136,16 @@ namespace TaskManagementSystem.Controllers
             return Unauthorized();
         }
 
-        private async Task<string> GenerateJwtToken(ApplicationUser user)
-        {
-            var userRoles = await _userManager.GetRolesAsync(user);
 
+
+        private async Task<string> GenerateJwtToken(ApplicationUser user){
+
+            var userRoles = await _userManager.GetRolesAsync(user);
             var claims = new List<Claim>
     {
-        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim(ClaimTypes.NameIdentifier, user.Id)
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
     };
 
             claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
@@ -191,6 +192,31 @@ namespace TaskManagementSystem.Controllers
             }
                 
         }
+        [HttpPost("UpdatePassword")]
+        public async Task<IActionResult> UpdatePassword(UpdatePasswordModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByNameAsync(model.Email);
+            if (user == null)
+            {
+                return NotFound(new { Message = "User not found" });
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Password updated successfully" });
+            }
+
+            return BadRequest(result.Errors);
+        }
+
     }
 
- }
+
+}

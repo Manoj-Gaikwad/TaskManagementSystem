@@ -46,33 +46,6 @@ namespace TaskManagementSystem.Repository
         }
         public async Task<List<TaskModel>> GetAllTasks()
         {
-            //var result = from mt in _taskdbconnection.MasterTemplet
-            //             join tf in _taskdbconnection.TempletFields on mt.TempId equals tf.TempId
-            //             join tv in _taskdbconnection.TempletValues on tf.FId equals tv.FId
-            //             where mt.TempName == "EmployeeInfo"
-            //             select new
-            //             {
-            //                 Template = mt,
-            //                 Field = tf,
-            //                 Value = tv
-            //             };
-
-
-            //var completedTasksCount = _taskdbconnection.Tasks
-            //    .Where(t => t.IsCompleted)
-            //    .GroupBy(t => new { t.ManagerId, t.AssignedTo, Month = t.ComplitionDate.Month, Year = t.ComplitionDate.Year })
-            //    .Select(g => new
-            //    {
-            //        ManagerId = g.Key.ManagerId,
-            //        Employee = g.Key.AssignedTo,
-            //        Month = g.Key.Month,
-            //        Year = g.Key.Year,
-            //        CompletedTaskCount = g.Count()
-            //    })
-            //    .OrderBy(r => r.ManagerId)
-            //    .ThenBy(r => r.Year)
-            //    .ThenBy(r => r.Month)
-            //    .ToList();
             var data = await _taskdbconnection.Tasks.Where(x => x.AssignedTo == _sessionData.UserEmail).ToListAsync();
             return data;
         }
