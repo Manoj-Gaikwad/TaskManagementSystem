@@ -11,6 +11,9 @@ using TaskManagementSystem.Models;
 using TaskManagementSystem.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Serilog;
+using Microsoft.Extensions.Logging;
+
 
 
 namespace TaskManagementSystem.Repository
@@ -19,11 +22,12 @@ namespace TaskManagementSystem.Repository
     {
         private readonly TaskManagementDbContext _taskdbconnection;
         private readonly  ISessionData _sessionData;
-
-        public TaskRepository(TaskManagementDbContext taskdbconnection, ISessionData sessionData)
+        private readonly ILogger<TaskRepository> _logger;
+        public TaskRepository(TaskManagementDbContext taskdbconnection, ISessionData sessionData, ILogger<TaskRepository> logger)
         {
             this._taskdbconnection = taskdbconnection;
             this._sessionData = sessionData;
+            this._logger=logger;
         }
         public async Task<List<TaskModel>> GetAllTasks()
         {
@@ -57,6 +61,7 @@ namespace TaskManagementSystem.Repository
             }
             await _taskdbconnection.AddAsync(task);
             await _taskdbconnection.SaveChangesAsync();
+            _logger.LogInformation($"Task Name:{t1.Title}, CreatedBy:{t1.CreatedBy} and Assignedto:{t1.AssignedTo}");
 
             Response r1= new Response();
             r1.Output = "Task Added Successfully";
@@ -81,10 +86,6 @@ namespace TaskManagementSystem.Repository
             {
                 return "Error In Task Update";
             }
-            
-
-          
-
         }
 
         public async Task<object> GetManagerAndEmployeesEmailsAsync()

@@ -15,6 +15,7 @@ using TaskManagementSystem.Repository;
 using TaskManagementSystem.IRepository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.Extensions.Logging;
 
 namespace TaskManagementSystem.Controllers
 {
@@ -28,8 +29,10 @@ namespace TaskManagementSystem.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ISessionData _sessionData;
         private readonly TaskManagementDbContext _dbContext;
+        private readonly EmailService _emailService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, ISessionData sessionData, TaskManagementDbContext dbContext)
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, ISessionData sessionData, TaskManagementDbContext dbContext, EmailService emailService, ILogger<AuthController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -37,6 +40,8 @@ namespace TaskManagementSystem.Controllers
             _roleManager = roleManager;
             _sessionData = sessionData;
             _dbContext = dbContext;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -56,13 +61,18 @@ namespace TaskManagementSystem.Controllers
                     Department = model.Department,
                     Role = model.Role,
                     ManagerId = model.ManagerId,
-
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
+                    _logger.LogInformation($"Employee {model.FirstName} Added by ManagerID {model.ManagerId}");
+                    string subject = "Your Account Details";
+                    string body = $"<p>Dear {model.FirstName},</p><p>Your account has been successfully created. Here are your login details:</p>" +
+                                  $"<p><b>Username:</b> {model.Email}<br><b>Password:</b> {model.Password}</p>";
+
+                    await _emailService.SendEmailAsync(model.Email, subject, body);
                     // Assign role to user
                     var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
                     if (!roleResult.Succeeded)
@@ -96,6 +106,11 @@ namespace TaskManagementSystem.Controllers
                 {
                     // Assign role to user
                     var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
+                    string subject = "Your Account Details";
+                    string body = $"<p>Dear {model.FirstName},</p><p>Your account has been successfully created. Here are your login details:</p>" +
+                                  $"<p><b>Username:</b> {model.Email}<br><b>Password:</b> {model.Password}</p>";
+
+                    await _emailService.SendEmailAsync(model.Email, subject, body);
                     if (!roleResult.Succeeded)
                     {
                         return BadRequest(roleResult.Errors);
@@ -103,7 +118,7 @@ namespace TaskManagementSystem.Controllers
                     return Ok(new { Result = "User created successfully" });
                 }
             }
-                return Ok(new { Result = "Error" });
+            return Ok(new { Result = "Error" });
         }
 
         [HttpPost("login")]
@@ -127,18 +142,21 @@ namespace TaskManagementSystem.Controllers
                     PhoneNumber = user.PhoneNumber,
                     Token = token,
                     Roles = rolesString
-
-
                 };
                 return Ok(logres);
             }
-
-            return Unauthorized();
+            else
+            {
+                _logger.LogError($"Invalid password for user: {model.Email}");
+                return Unauthorized();
+               
+            }
         }
 
 
 
-        private async Task<string> GenerateJwtToken(ApplicationUser user){
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
+        {
 
             var userRoles = await _userManager.GetRolesAsync(user);
             var claims = new List<Claim>
@@ -157,7 +175,7 @@ namespace TaskManagementSystem.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.Now.AddMinutes(90),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -165,13 +183,13 @@ namespace TaskManagementSystem.Controllers
         [HttpGet("GetLoginUserDetails")]
         public async Task<ApplicationUser> GetLoginUserDetails(string Email)
         {
-            var data= await this._dbContext.Users.FirstOrDefaultAsync(x => x.Email == Email);
+            var data = await this._dbContext.Users.FirstOrDefaultAsync(x => x.Email == Email);
             return data;
         }
         [HttpPost("UpdateUserInfo")]
         public async Task<List<ApplicationUser>> UpdateUserProfile(ApplicationUser applicationUser)
         {
-            ApplicationUser applicationUser1 = await this._dbContext.Users.FirstOrDefaultAsync(x=>x.Email==applicationUser.Email);
+            ApplicationUser applicationUser1 = await this._dbContext.Users.FirstOrDefaultAsync(x => x.Email == applicationUser.Email);
 
             if (applicationUser1 != null)
             {
@@ -190,7 +208,7 @@ namespace TaskManagementSystem.Controllers
             {
                 return null;
             }
-                
+
         }
         [HttpPost("UpdatePassword")]
         public async Task<IActionResult> UpdatePassword(UpdatePasswordModel model)
