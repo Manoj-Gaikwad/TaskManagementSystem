@@ -29,6 +29,7 @@ namespace TaskManagementSystem.Repository
         public async Task<List<ApplicationUser>> GetAll(){
             return await this._taskdbconnection.Users.ToListAsync();
         }
+      
 
         public async Task<object>GetManagerWiseEmployee()
         {
@@ -77,8 +78,25 @@ namespace TaskManagementSystem.Repository
             return $"File uploaded successfully";
 
         }
+        public async Task<Response> DeleteRecord(string email)
+        {
+            var data = this._taskdbconnection.Users.SingleOrDefaultAsync(x => x.Email == email);
+            Response r1 = new Response();
+            if (data.Result != null)
+            {
+                _taskdbconnection.Remove(data.Result);
+                await this._taskdbconnection.SaveChangesAsync();
 
-     
+                r1.StatusMessage = "Record Deleted Succfully";
+                return r1;
+            }
+            else
+            {
+                r1.StatusMessage = "Error in the Record Deletion";
+                return r1;
+            }
+
+        }
 
     }
 }

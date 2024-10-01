@@ -20,6 +20,7 @@ namespace TaskManagementSystem.Controllers
             this._iemployeeRepository = employeeRepository;
         }
         [HttpGet("GetAllEmployeeList")]
+
         public async Task<List<ApplicationUser>> GetAll()
         {
             return await _iemployeeRepository.GetAll();
@@ -42,6 +43,11 @@ namespace TaskManagementSystem.Controllers
         {
             var data=await _iemployeeRepository.UploadDocument(File, IsComplited, Fileupload,TaskId);
             return Ok(data);
+        }
+        [HttpDelete("DeleteRecordEmployee")]
+        public async Task<Response> DeleteRecord(string email)
+        {
+            return await _iemployeeRepository.DeleteRecord(email);
         }
     }
 }

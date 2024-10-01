@@ -65,13 +65,14 @@ namespace TaskManagementSystem
             services.AddSingleton<ISessionData,SessionData>();
             services.AddScoped<IAdminRepository, AdminRepository>();
             services.AddHttpContextAccessor();
+            services.AddScoped<EmailService>();
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("Employee", policy => policy.RequireRole("Employee"));
-                options.AddPolicy("Manager", policy => policy.RequireRole("Manager"));
-                options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
-            });
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy("Employee", policy => policy.RequireRole("Employee"));
+            //    options.AddPolicy("Manager", policy => policy.RequireRole("Manager"));
+            //    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+            //});
 
 
             services.AddCors(options =>
