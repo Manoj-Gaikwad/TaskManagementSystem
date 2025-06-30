@@ -1,4 +1,0 @@
-2024-10-08 11:00:31.659 +05:30 [INF] Starting up the application
-2024-10-08 11:01:17.279 +05:30 [WRN] Invalid password for user.
-2024-10-08 11:01:17.289 +05:30 [WRN] User failed to provide the correct password.
-2024-10-08 11:01:17.290 +05:30 [ERR] Invalid password for user: sandip.shinde@sumasoft.net

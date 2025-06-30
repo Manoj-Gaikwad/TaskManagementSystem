@@ -1,2 +1,0 @@
-2025-06-30 17:20:20.435 +05:30 [INF] Starting up the application
-2025-06-30 17:21:52.042 +05:30 [INF] Starting up the application

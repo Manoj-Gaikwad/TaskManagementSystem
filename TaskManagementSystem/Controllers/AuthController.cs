@@ -16,9 +16,6 @@ using TaskManagementSystem.IRepository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.Eventing.Reader;
-using Microsoft.AspNetCore.Authorization;
-using TaskManagementSystem.Cache;
 
 namespace TaskManagementSystem.Controllers
 {
@@ -34,20 +31,8 @@ namespace TaskManagementSystem.Controllers
         private readonly TaskManagementDbContext _dbContext;
         private readonly EmailService _emailService;
         private readonly ILogger<AuthController> _logger;
-        private readonly ICacheResponse _cacheResponse;
 
-        public AuthController(
-
-            UserManager<ApplicationUser> userManager, 
-            SignInManager<ApplicationUser> signInManager, 
-            IConfiguration configuration,
-            RoleManager<IdentityRole> roleManager,
-            ISessionData sessionData,
-            TaskManagementDbContext dbContext,
-            EmailService emailService,
-            ILogger<AuthController> logger,
-            ICacheResponse cacheResponse
-            )
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, ISessionData sessionData, TaskManagementDbContext dbContext, EmailService emailService, ILogger<AuthController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -57,106 +42,85 @@ namespace TaskManagementSystem.Controllers
             _dbContext = dbContext;
             _emailService = emailService;
             _logger = logger;
-            _cacheResponse = cacheResponse;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            try
+            if (model.Role == "Employee")
             {
-                if (model.Role == "Employee")
+                var user = new ApplicationUser
                 {
-                    var user = new ApplicationUser
+                    UserName = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    DOB = model.DOB,
+                    Address = model.Address,
+                    Department = model.Department,
+                    Role = model.Role,
+                    ManagerId = model.ManagerId,
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation($"Employee {model.FirstName} Added by ManagerID {model.ManagerId}");
+                    string subject = "Your Account Details";
+                    string body = $"<p>Dear {model.FirstName},</p><p>Your account has been successfully created. Here are your login details:</p>" +
+                                  $"<p><b>Username:</b> {model.Email}<br><b>Password:</b> {model.Password}</p>";
+
+                    await _emailService.SendEmailAsync(model.Email, subject, body);
+                    // Assign role to user
+                    var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
+                    if (!roleResult.Succeeded)
                     {
-                        UserName = model.Email,
-                        FirstName = model.FirstName,
-                        LastName = model.LastName,
-                        Email = model.Email,
-                        PhoneNumber = model.PhoneNumber,
-                        DOB = model.DOB,
-                        Address = model.Address,
-                        Department = model.Department,
-                        Role = model.Role,
-                        ManagerId = model.ManagerId,
-                    };
-
-                    var result = await _userManager.CreateAsync(user, model.Password);
-
-                    if (result.Succeeded)
-                    {
-                        _logger.LogInformation($"Employee {model.FirstName} Added by ManagerID {model.ManagerId}");
-                        string subject = "Your Account Details";
-                        string body = $"<p>Dear {model.FirstName},</p><p>Your account has been successfully created. Here are your login details:</p>" +
-                                      $"<p><b>Username:</b> {model.Email}<br><b>Password:</b> {model.Password}</p>";
-
-                        await _emailService.SendEmailAsync(model.Email, subject, body);
-                       // Assign role to user
-                        var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
-                        if (!roleResult.Succeeded)
-                        {
-                            return BadRequest(roleResult.Errors);
-                        }
-                        else
-                        {
-                            return Ok(new { Result = "User created successfully" });
-                        }
-                        
+                        return BadRequest(roleResult.Errors);
                     }
-                    else
-                    {
-                        return BadRequest("Error In Create User");
-                    }
+                    return Ok(new { Result = "User created successfully" });
                 }
-                else
+
+            }
+            else
+            {
+                var user = new ApplicationUser
                 {
-                    var user = new ApplicationUser
+                    UserName = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    DOB = model.DOB,
+                    Address = model.Address,
+                    Department = model.Department,
+                    Role = model.Role,
+                    ManagerId = null,
+
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    // Assign role to user
+                    var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
+                    string subject = "Your Account Details";
+                    string body = $"<p>Dear {model.FirstName},</p><p>Your account has been successfully created. Here are your login details:</p>" +
+                                  $"<p><b>Username:</b> {model.Email}<br><b>Password:</b> {model.Password}</p>";
+
+                    await _emailService.SendEmailAsync(model.Email, subject, body);
+                    if (!roleResult.Succeeded)
                     {
-                        UserName = model.Email,
-                        FirstName = model.FirstName,
-                        LastName = model.LastName,
-                        Email = model.Email,
-                        PhoneNumber = model.PhoneNumber,
-                        DOB = model.DOB,
-                        Address = model.Address,
-                        Department = model.Department,
-                        Role = model.Role,
-                        ManagerId = null,
-
-                    };
-
-                    var result = await _userManager.CreateAsync(user, model.Password);
-
-                    if (result.Succeeded)
-                    {
-                        // Assign role to user
-                        var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
-                        string subject = "Your Account Details";
-                        //string body = $"<p>Dear {model.FirstName},</p><p>Your account has been successfully created. Here are your login details:</p>" +
-                        //              $"<p><b>Username:</b> {model.Email}<br><b>Password:</b> {model.Password}</p>";
-
-                        //await _emailService.SendEmailAsync(model.Email, subject, body);
-                        if (!roleResult.Succeeded)
-                        {
-                            return BadRequest(roleResult.Errors);
-                        }
-                        else
-                        {
-                            return Ok(new { Result = "User created successfully" });
-                        }
+                        return BadRequest(roleResult.Errors);
                     }
-                    else
-                    {
-                        return BadRequest("Error In User Creation");
-                    }
+                    return Ok(new { Result = "User created successfully" });
                 }
             }
-            catch (Exception ex)
-            {
-                return BadRequest("Error in Registering New User");
-            }
+            return Ok(new { Result = "Error" });
         }
-        [AllowAnonymous]
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -171,7 +135,7 @@ namespace TaskManagementSystem.Controllers
                 var roles = await _userManager.GetRolesAsync(user);
                 var rolesString = string.Join(", ", roles);
                 var logres = new LoginResponse
-                { 
+                {
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     Email = user.Email,
@@ -179,9 +143,7 @@ namespace TaskManagementSystem.Controllers
                     Token = token,
                     Roles = rolesString
                 };
-                this._cacheResponse.Add(logres.Email, logres);
                 return Ok(logres);
-
             }
             else
             {

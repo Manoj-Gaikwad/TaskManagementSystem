@@ -1,16 +1,21 @@
-using System;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using TaskManagementSystem.Cache;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using TaskManagementSystem.IRepository;
 using TaskManagementSystem.Models;
 using TaskManagementSystem.Repository;
@@ -54,28 +59,35 @@ namespace TaskManagementSystem
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
                 };
             });
-
-            // Register services
-            services.AddScoped<ITaskRepository, TaskRepository>();
-            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            services.AddSingleton<ISessionData, SessionData>();
+            //service added 
+            services.AddScoped<ITaskRepository,TaskRepository>();
+            services.AddScoped<IEmployeeRepository,EmployeeRepository>();
+            services.AddSingleton<ISessionData,SessionData>();
             services.AddScoped<IAdminRepository, AdminRepository>();
-            services.AddSingleton<ICacheResponse, CacheResponse>();
-            services.AddScoped<EmailService>();
             services.AddHttpContextAccessor();
-            services.AddMemoryCache();
-            services.AddControllers();
+            services.AddScoped<EmailService>();
+
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy("Employee", policy => policy.RequireRole("Employee"));
+            //    options.AddPolicy("Manager", policy => policy.RequireRole("Manager"));
+            //    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+            //});
+
 
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", builder =>
-                {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
-                });
+                options.AddPolicy("AllowAll",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
             });
 
+
+            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskManagementSystem", Version = "v1" });
@@ -91,22 +103,25 @@ namespace TaskManagementSystem
                     Scheme = "Bearer"
                 });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+            {
+                new OpenApiSecurityScheme
                 {
+                    Reference = new OpenApiReference
                     {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[] { }
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
                     }
-                });
-            });
+                },
+                new string[] { }
+            }
+        });
+        });
+
+
+
         }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -119,11 +134,11 @@ namespace TaskManagementSystem
             }
 
             app.UseHttpsRedirection();
+
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors("AllowAll");
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -135,7 +150,6 @@ namespace TaskManagementSystem
                 CreateRoles(serviceProvider).Wait();
             }
         }
-
         private async System.Threading.Tasks.Task CreateRoles(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -150,6 +164,8 @@ namespace TaskManagementSystem
                     roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
                 }
             }
+
         }
     }
 }
+

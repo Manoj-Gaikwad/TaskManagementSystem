@@ -1,4 +1,0 @@
-2024-10-06 20:01:53.685 +05:30 [INF] Starting up the application
-2024-10-06 20:02:22.773 +05:30 [INF] Starting up the application
-2024-10-06 20:09:12.299 +05:30 [INF] Task Name:upadate api for userinfo, CreatedBy:sandip.shinde@sumasoft.net and Assignedto:nilesh.gaikwad@sumasoft.net
-2024-10-06 20:10:11.281 +05:30 [INF] Task Name:new api for get updated user info , CreatedBy:sandip.shinde@sumasoft.net and Assignedto:swapnil.pawar@sumasoft.net
