@@ -38,6 +38,7 @@
           "Microsoft.EntityFrameworkCore.Design": "5.0.17",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.17",
           "Microsoft.EntityFrameworkCore.Tools": "5.0.17",
+          "Microsoft.Extensions.Caching.Memory": "5.0.0",
           "Serilog.AspNetCore": "5.0.0",
           "Serilog.Settings.Configuration": "3.4.0",
           "Serilog.Sinks.Console": "5.0.0",

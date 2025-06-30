@@ -1,0 +1,1 @@
+2025-03-17 18:23:07.496 +05:30 [INF] Starting up the application

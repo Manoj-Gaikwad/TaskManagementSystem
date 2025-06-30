@@ -3,14 +3,17 @@ using System.Net.Mail;
 using System.Net;
 using System.Threading.Tasks;
 using System;
+using Microsoft.Extensions.Logging;
 
 public class EmailService
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IConfiguration configuration)
+    public EmailService(IConfiguration configuration,ILogger<EmailService> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task SendEmailAsync(string toEmail, string subject, string body)
@@ -35,6 +38,7 @@ public class EmailService
             try
             {
                 await client.SendMailAsync(mailMessage);
+                _logger.LogDebug("Mail Send Successfully");
             }
             catch (Exception ex)
             {

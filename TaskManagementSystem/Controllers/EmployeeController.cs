@@ -49,5 +49,10 @@ namespace TaskManagementSystem.Controllers
         {
             return await _iemployeeRepository.DeleteRecord(email);
         }
+        [HttpGet("GetHello")]
+        public string HelloPrint()
+        {
+            return "Hello From Test";
+        }
     }
 }

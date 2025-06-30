@@ -19,3 +19,4 @@ System.InvalidOperationException: Role .NET does not exist.
    at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
    at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(HttpContext context)
 2024-10-01 15:32:12.901 +05:30 [WRN] User validation failed: DuplicateUserName.
+2024-10-01 16:16:49.118 +05:30 [INF] Starting up the application
