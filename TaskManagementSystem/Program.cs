@@ -9,6 +9,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        //Welcome To Main Method
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(new ConfigurationBuilder()
