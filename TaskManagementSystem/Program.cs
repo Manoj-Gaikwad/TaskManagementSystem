@@ -9,7 +9,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Configure Serilog
+        
+        // Configure Serilog for logging
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
