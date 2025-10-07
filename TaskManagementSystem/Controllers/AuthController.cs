@@ -72,7 +72,7 @@ namespace TaskManagementSystem.Controllers
                     string body = $"<p>Dear {model.FirstName},</p><p>Your account has been successfully created. Here are your login details:</p>" +
                                   $"<p><b>Username:</b> {model.Email}<br><b>Password:</b> {model.Password}</p>";
 
-                    //await _emailService.SendEmailAsync(model.Email, subject, body);
+                    await _emailService.SendEmailAsync(model.Email, subject, body);
                     // Assign role to user
                     var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
                     if (!roleResult.Succeeded)

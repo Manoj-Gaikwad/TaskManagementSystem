@@ -53,7 +53,7 @@ namespace TaskManagementSystem.Repository
       
         public async Task<object> UploadDocument(IFormFile File, bool IsComplited, string Fileupload, int TaskId)
         {
-            _uploadPath = @"C:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\Uploaded Task";
+            _uploadPath = @"D:\TaskManagementSystem\TaskManagementSystem\TaskManagementSystem\Documents";
             if (File == null || File.Length == 0)
                 return "No file uploaded";
 

@@ -1,4 +1,0 @@
-2025-09-26 11:22:50.201 +05:30 [INF] Starting up the application
-2025-09-26 11:25:24.676 +05:30 [INF] Starting up the application
-2025-09-26 15:31:54.464 +05:30 [INF] Starting up the application
-2025-09-26 15:33:42.130 +05:30 [ERR] Invalid password for user: master@fusionstak.com
