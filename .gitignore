@@ -347,4 +347,4 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 #ignor log files
-./TaskManagementSystem/logs/*.txt
+.TaskManagementSystem/logs/*.txt
