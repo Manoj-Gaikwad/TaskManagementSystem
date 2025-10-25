@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TaskManagementSystem.Extentions;
 using TaskManagementSystem.IRepository;
 using TaskManagementSystem.Models;
 
@@ -22,6 +23,7 @@ namespace TaskManagementSystem.Repository
         public async Task<List<Admin>> MonthWisePerformance()
         {
             var completedTasksCount = await _taskManagementDbContext.Tasks
+         .AsEfQueryable()
          .Where(t => t.IsCompleted)
          .GroupBy(t => new { t.ManagerId, t.AssignedTo, t.CreatedBy, Month = t.ComplitionDate.Month, Year = t.ComplitionDate.Year })
          .Select(g => new Admin
@@ -44,6 +46,7 @@ namespace TaskManagementSystem.Repository
         {
             // Count completed tasks for the specified month and year
             var completedCount = await _taskManagementDbContext.Tasks
+                .AsEfQueryable()
                 .Where(x => x.AssignedTo == chartResponse.email && x.IsCompleted &&
                             x.ComplitionDate.Month == chartResponse.month &&
                             x.ComplitionDate.Year == chartResponse.year)
@@ -51,6 +54,7 @@ namespace TaskManagementSystem.Repository
 
             // Count not completed tasks that are still active in the specified month and year
             var notCompletedCount = await _taskManagementDbContext.Tasks
+                .AsEfQueryable()
                 .Where(x => x.AssignedTo == chartResponse.email && !x.IsCompleted &&
                             x.CreationDate.Month == chartResponse.month &&
                             x.CreationDate.Year == chartResponse.year)
@@ -86,6 +90,7 @@ namespace TaskManagementSystem.Repository
 
             // Fetch tasks for the last five months
             var tasks = await _taskManagementDbContext.Tasks
+                .AsEfQueryable()
                 .Where(t => t.AssignedTo == email
                             && t.CreationDate >= DateTime.Now.AddMonths(-5))
                 .ToListAsync();
@@ -128,10 +133,11 @@ namespace TaskManagementSystem.Repository
         public async Task<List<EmployeeWithManager>> GetAllEmployee()
         {
             // Get all users (both managers and employees)
-            var allUsers = await this._taskManagementDbContext.Users.ToListAsync();
+            var allUsers = await this._taskManagementDbContext.Users.AsEfQueryable().ToListAsync();
 
             // Get only employees
             var employees = await this._taskManagementDbContext.Users
+                .AsEfQueryable()
                 .Where(x => x.Role == "Employee").ToListAsync();
 
             // Create a list to store employees along with their manager's name
@@ -167,12 +173,12 @@ namespace TaskManagementSystem.Repository
 
         public async Task<List<ApplicationUser>> GetAllManagers()
         {
-            return await this._taskManagementDbContext.Users.Where(x => x.Role == "Manager").ToListAsync();
+            return await this._taskManagementDbContext.Users.AsEfQueryable().Where(x => x.Role == "Manager").ToListAsync();
         }
 
         public async Task<Response> DeleteRecord(string email)
         {
-            var data = this._taskManagementDbContext.Users.SingleOrDefaultAsync(x => x.Email == email);
+            var data = this._taskManagementDbContext.Users.AsEfQueryable().SingleOrDefaultAsync(x => x.Email == email);
             Response r1 = new Response();
             if (data.Result != null)
             {

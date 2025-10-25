@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
 using Microsoft.Extensions.Logging;
+using TaskManagementSystem.Extentions;
 
 
 
@@ -31,12 +32,12 @@ namespace TaskManagementSystem.Repository
         }
         public async Task<List<TaskModel>> GetAllTasks()
         {
-            var data= await _taskdbconnection.Tasks.Where(x => x.CreatedBy == _sessionData.UserEmail).ToListAsync();
+            var data= await _taskdbconnection.Tasks.AsEfQueryable().Where(x => x.CreatedBy == _sessionData.UserEmail).ToListAsync();
             return data;
         }
         public async Task<TaskModel>GetTaskById(int Id)
         {
-            var data=await _taskdbconnection.Tasks.FirstOrDefaultAsync(x=>x.TaskId == Id);
+            var data=await _taskdbconnection.Tasks.AsEfQueryable().FirstOrDefaultAsync(x=>x.TaskId == Id);
             return data;
         }
         public async Task<Response> CreateTask(TaskModel t1)
@@ -71,7 +72,7 @@ namespace TaskManagementSystem.Repository
 
         public async Task<string> UpdateTask(TaskModel t1)
         {
-            var data = await this._taskdbconnection.Tasks.FirstOrDefaultAsync(x => x.TaskId == t1.TaskId);
+            var data = await this._taskdbconnection.Tasks.AsEfQueryable().FirstOrDefaultAsync(x => x.TaskId == t1.TaskId);
 
             if (data != null)
             {
@@ -95,6 +96,7 @@ namespace TaskManagementSystem.Repository
 
             // Retrieve the manager's user
             var manager = await this._taskdbconnection.Users
+                .AsEfQueryable()
                 .FirstOrDefaultAsync(x => x.Email == managerEmail);
 
             if (manager == null)
@@ -105,6 +107,7 @@ namespace TaskManagementSystem.Repository
 
             // Retrieve all employees managed by the identified manager
             var employees = await this._taskdbconnection.Users
+              .AsEfQueryable()
               .Where(x => x.ManagerId == manager.Id && x.Email != managerEmail &&x.Role=="Employee") // Exclude manager's email
               .Select(x => x.Email) // Select only the email of employees
               .ToListAsync();
