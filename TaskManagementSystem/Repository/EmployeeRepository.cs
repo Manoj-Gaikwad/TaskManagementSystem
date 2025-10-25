@@ -9,6 +9,7 @@ using TaskManagementSystem.Models;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using TaskManagementSystem.Extentions;
 
 namespace TaskManagementSystem.Repository
 {
@@ -27,16 +28,16 @@ namespace TaskManagementSystem.Repository
         }
 
         public async Task<List<ApplicationUser>> GetAll(){
-            return await this._taskdbconnection.Users.ToListAsync();
+            return await this._taskdbconnection.Users.AsEfQueryable().ToListAsync();
         }
       
 
         public async Task<object>GetManagerWiseEmployee()
         {
             
-           var manager = await this._taskdbconnection.Users.FirstOrDefaultAsync(x=>x.Email== this._sessionData.UserEmail);
+           var manager = await this._taskdbconnection.Users.AsEfQueryable().FirstOrDefaultAsync(x=>x.Email== this._sessionData.UserEmail);
 
-            var employee = await this._taskdbconnection.Users.Where(x => x.ManagerId == manager.Id && x.Email != manager.Email).ToListAsync();
+            var employee = await this._taskdbconnection.Users.AsEfQueryable().Where(x => x.ManagerId == manager.Id && x.Email != manager.Email).ToListAsync();
 
             return new {
                 manager = manager,
@@ -47,7 +48,7 @@ namespace TaskManagementSystem.Repository
         }
         public async Task<List<TaskModel>> GetAllTasks()
         {
-            var data = await _taskdbconnection.Tasks.Where(x => x.AssignedTo == _sessionData.UserEmail).ToListAsync();
+            var data = await _taskdbconnection.Tasks.AsEfQueryable().Where(x => x.AssignedTo == _sessionData.UserEmail).ToListAsync();
             return data;
         }
       
@@ -66,7 +67,7 @@ namespace TaskManagementSystem.Repository
                 await File.CopyToAsync(stream);
             }
 
-            TaskModel T1 = await _taskdbconnection.Tasks.SingleOrDefaultAsync(x=>x.TaskId ==TaskId);
+            TaskModel T1 = await _taskdbconnection.Tasks.AsEfQueryable().SingleOrDefaultAsync(x=>x.TaskId ==TaskId);
             if(T1!=null)
             {
                T1.IsCompleted = IsComplited;
@@ -80,7 +81,7 @@ namespace TaskManagementSystem.Repository
         }
         public async Task<Response> DeleteRecord(string email)
         {
-            var data = this._taskdbconnection.Users.SingleOrDefaultAsync(x => x.Email == email);
+            var data = this._taskdbconnection.Users.AsEfQueryable().SingleOrDefaultAsync(x => x.Email == email);
             Response r1 = new Response();
             if (data.Result != null)
             {

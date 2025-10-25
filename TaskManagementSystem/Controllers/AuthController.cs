@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -11,11 +10,10 @@ using System;
 using TaskManagementSystem.Models;
 using System.Collections.Generic;
 using System.Linq;
-using TaskManagementSystem.Repository;
 using TaskManagementSystem.IRepository;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Logging;
+using TaskManagementSystem.Extentions;
 
 namespace TaskManagementSystem.Controllers
 {
@@ -183,13 +181,13 @@ namespace TaskManagementSystem.Controllers
         [HttpGet("GetLoginUserDetails")]
         public async Task<ApplicationUser> GetLoginUserDetails(string Email)
         {
-            var data = await this._dbContext.Users.FirstOrDefaultAsync(x => x.Email == Email);
+            var data = await this._dbContext.Users.AsEfQueryable().FirstOrDefaultAsync(x => x.Email == Email);
             return data;
         }
         [HttpPost("UpdateUserInfo")]
         public async Task<List<ApplicationUser>> UpdateUserProfile(ApplicationUser applicationUser)
         {
-            ApplicationUser applicationUser1 = await this._dbContext.Users.FirstOrDefaultAsync(x => x.Email == applicationUser.Email);
+            ApplicationUser applicationUser1 = await this._dbContext.Users.AsEfQueryable().FirstOrDefaultAsync(x => x.Email == applicationUser.Email);
 
             if (applicationUser1 != null)
             {
@@ -201,7 +199,7 @@ namespace TaskManagementSystem.Controllers
                 applicationUser1.PhoneNumber = applicationUser.PhoneNumber;
                 applicationUser1.Address = applicationUser.Address;
                 await this._dbContext.SaveChangesAsync();
-                var updatedUsers = await this._dbContext.Users.Where(x => x.Email == applicationUser.Email).ToListAsync();
+                var updatedUsers = await this._dbContext.Users.AsEfQueryable().Where(x => x.Email == applicationUser.Email).ToListAsync();
                 return updatedUsers;
             }
             else
