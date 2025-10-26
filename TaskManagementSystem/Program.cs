@@ -15,97 +15,43 @@ using TaskManagementSystem;
 using TaskManagementSystem.IRepository;
 using TaskManagementSystem.Models;
 using TaskManagementSystem.Repository;
+using TaskManagementSystem.StatupExtentions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------------------
 // Serilog
-// ---------------------
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .CreateLogger();
-builder.Host.UseSerilog();
+builder.Host.AddSerilogLogging(builder.Configuration);
 
-// ---------------------
+
 // Services
-// ---------------------
 builder.Services.AddDbContext<TaskManagementDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<TaskManagementDbContext>()
-    .AddDefaultTokenProviders();
+// JWT Authentication and Identity
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
 
 // Dependency Injection
-builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-builder.Services.AddScoped<IAdminRepository, AdminRepository>();
-builder.Services.AddSingleton<ISessionData, SessionData>();
-builder.Services.AddScoped<EmailService>();
+builder.Services.AddApplicationServices();
+
 builder.Services.AddHttpContextAccessor();
 
 // CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+builder.Services.AddCustomCorsPolicy();
 
-// Controllers + Swagger
+// Controllers
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskManagementSystem", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        BearerFormat = "JWT",
-        Description = "Enter 'Bearer {token}'",
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+
+//Swagger configuration
+builder.Services.AddCustomSwagger();
+
+
 
 var app = builder.Build();
 
-// ---------------------
 // Middleware
-// ---------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -116,6 +62,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSerilogRequestLogging();
+
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
@@ -123,9 +71,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// ---------------------
 // Seed roles
-// ---------------------
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
@@ -134,9 +80,7 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
-// ---------------------
 // Role creation method
-// ---------------------
 async Task CreateRoles(IServiceProvider serviceProvider)
 {
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
